@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.7.415.18" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\core.domain\core.domain.csproj" />
+  </ItemGroup>
+
 </Project>

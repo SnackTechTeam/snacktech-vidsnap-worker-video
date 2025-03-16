@@ -1,0 +1,68 @@
+using Amazon.SQS;
+using Amazon.SQS.Model;
+using core.domain.common;
+using core.domain.ports.adapter.amazon.sqs;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
+namespace adapter.amazon.sqs.services
+{
+    public class SqsMessagingService: ISqsMessagingService
+    {
+        private readonly ILogger<SqsMessagingService> logger;
+        private readonly IAmazonSQS sqsClient;
+
+        public SqsMessagingService(ILogger<SqsMessagingService> logger,IAmazonSQS sqsClient){
+            this.logger = logger;
+            this.sqsClient = sqsClient;
+        }
+
+        public async Task<Result> EnviarMensagemAsync<T>(T mensagem, string urlFila){
+            try{
+                var mensagemSerializada = JsonConvert.SerializeObject(mensagem);
+
+                var request = new SendMessageRequest{
+                    QueueUrl = urlFila,
+                    MessageBody = mensagemSerializada
+                };
+
+                await sqsClient.SendMessageAsync(request);
+                return new Result();
+            }
+            catch(Exception ex){
+                return new Result(ex);
+            }
+        }
+
+        public async Task<Result<ReceiveMessageResponse>> ConsumirMensagemDeFilaAsync(string urlFila){
+            try{
+                var request = new ReceiveMessageRequest{
+                    QueueUrl = urlFila,
+                    MaxNumberOfMessages = 1,
+                    WaitTimeSeconds = 5
+                };
+                var resultado = await sqsClient.ReceiveMessageAsync(request);
+                return new Result<ReceiveMessageResponse>(resultado);
+            }
+            catch(Exception ex){
+                return new Result<ReceiveMessageResponse>(ex);
+            }
+        }
+
+        public async Task<Result> DeletarMensagemAsync(string urlFila, Message mensagem){
+            try{
+                var request = new DeleteMessageRequest{
+                    QueueUrl = urlFila,
+                    ReceiptHandle = mensagem.ReceiptHandle
+                };
+
+                await sqsClient.DeleteMessageAsync(request);
+
+                return new Result();
+            }
+            catch(Exception ex){
+                return new Result(ex);
+            }
+        }
+    }
+}
