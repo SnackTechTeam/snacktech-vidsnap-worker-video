@@ -26,7 +26,7 @@ namespace core.application.services
                 ZipFile.CreateFromDirectory(caminhoImagens,
                                             caminhoZipCompleto,
                                             CompressionLevel.Optimal,
-                                            includeBaseDirectory: true);
+                                            includeBaseDirectory: false);
 
                 logger.LogInformation($"Vídeo {videoParaBaixar.CaminhoVideoCompleto()} compactado com sucesso em {caminhoZipCompleto}...");
                 return new Result();

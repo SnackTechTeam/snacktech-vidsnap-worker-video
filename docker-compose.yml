@@ -1,0 +1,53 @@
+name: snacktech-vidsnap
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"  # Porta principal do LocalStack
+    environment:
+      - DEBUG=${DEBUG:-0}
+      - SERVICES=s3,sqs,sns,dynamodb
+      - DEBUG=1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1  # Região padrão para a AWS
+    networks:
+      - snacktech-vidsnap-network
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  video-worker:
+    container_name: snacktech-vidsnap-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: snacktech-vidsnap-worker:alpha
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AmazonOptions__Region=us-east-1
+      - AmazonOptions__AwsAccessKeyId=test
+      - AmazonOptions__AwsSecretAccessKey=test
+      - AmazonOptions__AwsSecretAccessToken=test
+      - AmazonOptions__UseLocalStack=true
+      - SqsOptions__ServiceUrl=http://localstack:4566
+      - SqsOptions__QueueUrlConsuming=http://localhost:4566/000000000000/evento-novo-video
+      - SqsOptions__QueueUrlDlq=http://localhost:4566/000000000000/evento-novo-video-dlq
+      - SqsOptions__QueueUrlProcessSuccess=http://localhost:4566/000000000000/evento-video-processado
+      - S3Options__ServiceUrl=http://localstack:4566
+    ports:
+      - 8080:8080
+      - 8081:8081
+    restart: on-failure
+    networks: 
+      - snacktech-vidsnap-network
+    depends_on:
+      - localstack
+
+networks:
+  snacktech-vidsnap-network:
+    driver: bridge

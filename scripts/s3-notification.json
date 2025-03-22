@@ -1,0 +1,58 @@
+{
+    "QueueConfigurations": [
+        {
+            "QueueArn": "arn:aws:sqs:us-east-1:000000000000:evento-novo-video",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [{ "Name": "suffix", "Value": ".mp4" }]
+                }
+            }
+        },
+        {
+            "QueueArn": "arn:aws:sqs:us-east-1:000000000000:evento-novo-video",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [{ "Name": "suffix", "Value": ".avi" }]
+                }
+            }
+        },
+        {
+            "QueueArn": "arn:aws:sqs:us-east-1:000000000000:evento-novo-video",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [{ "Name": "suffix", "Value": ".mov" }]
+                }
+            }
+        },
+        {
+            "QueueArn": "arn:aws:sqs:us-east-1:000000000000:evento-novo-video",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [{ "Name": "suffix", "Value": ".mkv" }]
+                }
+            }
+        },
+        {
+            "QueueArn": "arn:aws:sqs:us-east-1:000000000000:evento-novo-video",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [{ "Name": "suffix", "Value": ".flv" }]
+                }
+            }
+        },
+        {
+            "QueueArn": "arn:aws:sqs:us-east-1:000000000000:evento-novo-video",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [{ "Name": "suffix", "Value": ".wmv" }]
+                }
+            }
+        }
+    ]
+}
