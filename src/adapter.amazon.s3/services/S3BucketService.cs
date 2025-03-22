@@ -15,7 +15,7 @@ namespace adapter.amazon.s3.services
             this.s3Client = s3Client;
         }
 
-        public async Task<Result> BaixarArquivo(string nomeBucket, string chaveS3, string caminhoLocalDestino){
+        public async Task<Result> BaixarArquivoAsync(string nomeBucket, string chaveS3, string caminhoLocalDestino){
             try{
                 logger.LogInformation($"Baixando {chaveS3} localmente...");
 
@@ -39,7 +39,7 @@ namespace adapter.amazon.s3.services
             }
         }
 
-        public async Task<Result> SubirArquivo(string nomeBucket, string chaveS3, string caminhoLocalArquivo){
+        public async Task<Result> SubirArquivoAsync(string nomeBucket, string chaveS3, string caminhoLocalArquivo){
             try{
                 logger.LogInformation($"Subindo {caminhoLocalArquivo} para S3...");
 
