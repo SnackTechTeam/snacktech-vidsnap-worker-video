@@ -30,6 +30,7 @@ namespace adapter.amazon.sqs.services
                 return new Result();
             }
             catch(Exception ex){
+                logger.LogError(ex,$"Erro ao enviar mensagem para {urlFila} - {ex.Message}");
                 return new Result(ex);
             }
         }
@@ -45,6 +46,7 @@ namespace adapter.amazon.sqs.services
                 return new Result<ReceiveMessageResponse>(resultado);
             }
             catch(Exception ex){
+                logger.LogError(ex,$"Ero ao consumir mensagem de {urlFila} - {ex.Message}");
                 return new Result<ReceiveMessageResponse>(ex);
             }
         }
@@ -61,6 +63,7 @@ namespace adapter.amazon.sqs.services
                 return new Result();
             }
             catch(Exception ex){
+                logger.LogError(ex,$"Erro ao deletar mensagem {urlFila} - {ex.Message}");
                 return new Result(ex);
             }
         }
