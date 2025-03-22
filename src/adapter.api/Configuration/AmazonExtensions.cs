@@ -8,6 +8,7 @@ namespace adapter.api.Configuration
 {
     public static class AmazonExtensions
     {
+        //TODO: Aplicar configuração para definir LocalStack ou AWS antes de instanciar os clients
         public static IServiceCollection AddAmazonSqs(this IServiceCollection services){
             services.AddTransient<IAmazonSQS>(sp => {
                 var settingsAmazon = sp.GetRequiredService<IOptions<AmazonOptions>>().Value;

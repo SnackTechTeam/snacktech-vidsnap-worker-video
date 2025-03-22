@@ -1,3 +1,4 @@
+using core.domain.dtos;
 using core.domain.dtos.messages;
 using core.domain.options;
 using core.domain.ports.adapter.amazon.sqs;
@@ -45,11 +46,18 @@ namespace adapter.api.Workers
 
                             if(!result.IsSuccess())
                                 await sqsMessagingService.EnviarMensagemAsync(message.Body, sqsOptions.QueueUrlDlq);
+
+                            await sqsMessagingService.EnviarMensagemAsync(result.Data,sqsOptions.QueueUrlProcessSuccess);
                             
                        }
                        catch(Exception ex){
                             logger.LogError(ex, $"Erro durante processamento da mensagem {message.MessageId} - {ex.Message}");
-                            await sqsMessagingService.EnviarMensagemAsync(message.Body,sqsOptions.QueueUrlDlq);
+                            var dlqMessage = new DlqMessageDto{
+                                MensagemOriginal = message.Body,
+                                ErroDeProcessamento = new ExceptionResponse(ex)
+                            };
+
+                            await sqsMessagingService.EnviarMensagemAsync(JsonConvert.SerializeObject(dlqMessage),sqsOptions.QueueUrlDlq);
                        }
                        finally{
                             await sqsMessagingService.DeletarMensagemAsync(sqsOptions.QueueUrlConsuming,message);

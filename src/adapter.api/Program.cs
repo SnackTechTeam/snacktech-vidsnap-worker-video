@@ -29,6 +29,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddHostedService<WorkerConsumerSqsVideoMessage>();
+//TODO: Criar um consumidor da fila de DLQ?
 
 var app = builder.Build();
 
