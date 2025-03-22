@@ -19,8 +19,8 @@ namespace adapter.amazon.s3.services
         public async Task<Result> BaixarArquivoAsync(VideoParaBaixar videoParaBaixar){
             try{
                 logger.LogInformation($"Baixando {videoParaBaixar.Chave} localmente...");
-                Directory.CreateDirectory(videoParaBaixar.DestinoLocal);
-                string fileLocalPath = videoParaBaixar.DestinoCompleto();
+                Directory.CreateDirectory(videoParaBaixar.DestinoLocal());
+                string fileLocalPath = videoParaBaixar.CaminhoVideoCompleto();
 
                 var getRequest = new GetObjectRequest{
                     BucketName = videoParaBaixar.Bucket,

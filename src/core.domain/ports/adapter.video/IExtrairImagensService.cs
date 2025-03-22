@@ -1,9 +1,10 @@
 using core.domain.common;
+using core.domain.models;
 
 namespace core.domain.ports.adapter.video
 {
     public interface IExtrairImagensService
     {
-        Task<Result> ExtrairImagensPorIntervaloAsync(string nomeArquivo, string caminhoLocal, string caminhoDestino, int intervaloEmSegundos);
+        Task<Result<string>> ExtrairImagensPorIntervaloAsync(VideoParaBaixar videoParaBaixar, int intervaloEmSegundos);
     }
 }

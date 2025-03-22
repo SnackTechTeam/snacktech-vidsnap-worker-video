@@ -1,6 +1,7 @@
 
 using System.Globalization;
 using core.domain.common;
+using core.domain.models;
 using core.domain.ports.adapter.video;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg;
@@ -8,36 +9,42 @@ using Xabe.FFmpeg.Downloader;
 
 namespace adapter.video.services
 {
-    public class ExtrairImagensService:IExtrairImagensService
+    public class ExtrairImagensService: IExtrairImagensService
     {
         private readonly ILogger<ExtrairImagensService> logger;
         public ExtrairImagensService(ILogger<ExtrairImagensService> logger){
             this.logger = logger;
         }
 
-        public async Task<Result> ExtrairImagensPorIntervaloAsync(string nomeArquivo, string caminhoLocal, string caminhoDestino, int intervaloEmSegundos){
+        public async Task<Result<string>> ExtrairImagensPorIntervaloAsync(VideoParaBaixar videoParaBaixar, int intervaloEmSegundos){
             try{
-                if(!File.Exists(caminhoLocal))
-                    throw new FileNotFoundException("O arquivo não foi encontrado",caminhoLocal);
+                var caminhoVideo = videoParaBaixar.CaminhoVideoCompleto();
+                var caminhoImagens = videoParaBaixar.DestinoImagens();
+                if(!File.Exists(caminhoVideo))
+                    throw new FileNotFoundException("O arquivo não foi encontrado",caminhoVideo);
 
-                Directory.CreateDirectory(caminhoDestino);
+                Directory.CreateDirectory(caminhoImagens);
 
-                var mediaInfo = await BuscarMediaInfoAsync(caminhoLocal);
+                var mediaInfo = await BuscarMediaInfoAsync(caminhoVideo);
                 
                 await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official);
                 
                 TimeSpan duracao = mediaInfo.Duration;
                 var timestamps = PegarTimeStamps(duracao,intervaloEmSegundos);
 
+                var frames = new List<string>();
                 foreach(var timestamp in timestamps)
-                    await ExtrairFramesNoTimeStamp(caminhoLocal,caminhoDestino,timestamp);
+                {
+                    var frameName = await ExtrairFramesNoTimeStamp(caminhoVideo,caminhoImagens,timestamp);
+                    frames.Add(frameName);
+                }
 
-                logger.LogInformation($"Frames extraídos de {nomeArquivo} com sucesso");
-                return new Result();
+                logger.LogInformation($"Frames extraídos de {videoParaBaixar.NomeVideo} com sucesso");
+                return new Result<string>(frames.First());
             }
             catch(Exception exception){
                 logger.LogError(exception,$"Erro - ExtrairImagensPorIntervaloAsync - {exception.Message}");
-                return new Result(exception);
+                return new Result<string>(exception);
             }
         }
 
@@ -58,7 +65,7 @@ namespace adapter.video.services
             return timeStamps;
         }
 
-        private async Task ExtrairFramesNoTimeStamp(string caminhoLocal, string destinoLocal, string timeStamp){
+        private async Task<string> ExtrairFramesNoTimeStamp(string caminhoLocal, string destinoLocal, string timeStamp){
             string nomeImagemSaida = $"frame_{timeStamp.Replace(":","_")}.png";
             string caminhoDestinoFinal = Path.Combine(destinoLocal,nomeImagemSaida);
 
@@ -69,6 +76,7 @@ namespace adapter.video.services
             await conversao.Start();
 
             logger.LogInformation($"Frame extraído: {caminhoDestinoFinal}");
+            return nomeImagemSaida;
         }
     }
 }
