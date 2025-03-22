@@ -1,6 +1,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using core.domain.common;
+using core.domain.models;
 using core.domain.ports.adapter.amazon.s3;
 using Microsoft.Extensions.Logging;
 
@@ -15,22 +16,24 @@ namespace adapter.amazon.s3.services
             this.s3Client = s3Client;
         }
 
-        public async Task<Result> BaixarArquivoAsync(string nomeBucket, string chaveS3, string caminhoLocalDestino){
+        public async Task<Result> BaixarArquivoAsync(VideoParaBaixar videoParaBaixar){
             try{
-                logger.LogInformation($"Baixando {chaveS3} localmente...");
+                logger.LogInformation($"Baixando {videoParaBaixar.Chave} localmente...");
+                Directory.CreateDirectory(videoParaBaixar.DestinoLocal);
+                string fileLocalPath = videoParaBaixar.DestinoCompleto();
 
                 var getRequest = new GetObjectRequest{
-                    BucketName = nomeBucket,
-                    Key = chaveS3
+                    BucketName = videoParaBaixar.Bucket,
+                    Key = videoParaBaixar.Chave
                 };
 
                 using var response = await s3Client.GetObjectAsync(getRequest);
                 await using var responseStream = response.ResponseStream;
-                await using var fileStream = File.Create(caminhoLocalDestino);
+                await using var fileStream = File.Create(fileLocalPath);
 
                 await responseStream.CopyToAsync(fileStream);
 
-                logger.LogInformation($"Download de {chaveS3} concluído. Salvo em {caminhoLocalDestino}");
+                logger.LogInformation($"Download de {videoParaBaixar.Chave} concluído. Salvo em {fileLocalPath}");
                 return new Result();
             }
             catch(Exception exception){

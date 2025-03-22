@@ -7,7 +7,7 @@ namespace core.domain.models
         public VideoValido NomeVideo {get; set;}
         public StringNaoVaziaOuComEspacos Bucket {get; set;} = default!;
         public StringNaoVaziaOuComEspacos Chave {get; set;} = default!;
-        public string DestinoLocal()
-            => $"/espaco-videos/{NomeVideo}";
+        public readonly string DestinoLocal = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"espaco-videos");
+        public string DestinoCompleto() => Path.Combine(DestinoLocal,NomeVideo);
     }
 }

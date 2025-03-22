@@ -26,7 +26,8 @@ namespace adapter.api.Configuration
                 var settingsAmazon = sp.GetRequiredService<IOptions<AmazonOptions>>().Value;
                 var settingsS3 = sp.GetRequiredService<IOptions<S3Options>>().Value;
                 var s3Config = new AmazonS3Config{
-                    ServiceURL = settingsS3.ServiceUrl
+                    ServiceURL = settingsS3.ServiceUrl,
+                    ForcePathStyle = true
                 };
                 var credentials = new BasicAWSCredentials(settingsAmazon.AwsAccessKeyId,settingsAmazon.AwsSecretAccessKey);
 

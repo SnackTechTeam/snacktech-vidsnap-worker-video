@@ -3,7 +3,6 @@ using core.domain.dtos.messages;
 using core.domain.models;
 using core.domain.ports.adapter.amazon.s3;
 using core.domain.ports.core.application;
-using core.domain.types;
 using Microsoft.Extensions.Logging;
 
 namespace core.application.services
@@ -27,10 +26,9 @@ namespace core.application.services
                     Chave = newVideo.S3.Object.Key
                 };
 
-                var resultDownloadFile = await s3BucketService.BaixarArquivoAsync(videoParaBaixar.Bucket,videoParaBaixar.Bucket,videoParaBaixar.DestinoLocal());
+                var resultDownloadFile = await s3BucketService.BaixarArquivoAsync(videoParaBaixar);
             }
 
-            //baixar video
             //criar imagens
             //criar zip das imagens
             //publicar zip em S3
