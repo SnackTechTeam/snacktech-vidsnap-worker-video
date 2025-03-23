@@ -45,7 +45,10 @@ namespace adapter.api.Workers
                             var result = await videoMessageHandler.ProcessVideoMessage(mensagemDeserializada!);
 
                             if(!result.IsSuccess())
+                            {
                                 await sqsMessagingService.EnviarMensagemAsync(message.Body, sqsOptions.QueueUrlDlq);
+                                continue;        
+                            }
 
                             await sqsMessagingService.EnviarMensagemAsync(result.Data,sqsOptions.QueueUrlProcessSuccess);
                             

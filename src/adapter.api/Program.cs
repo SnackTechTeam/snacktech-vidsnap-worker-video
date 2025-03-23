@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using adapter.amazon.s3;
 using adapter.amazon.sqs;
 using adapter.api.Configuration;

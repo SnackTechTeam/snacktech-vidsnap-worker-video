@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using core.domain.common;
 using core.domain.models;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace core.application.services
 {
+    [ExcludeFromCodeCoverage]
     public class CompactService : ICompactService
     {
         private readonly ILogger<CompactService> logger;

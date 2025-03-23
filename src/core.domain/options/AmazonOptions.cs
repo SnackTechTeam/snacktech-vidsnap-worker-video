@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace core.domain.options
 {
+    [ExcludeFromCodeCoverage]
     public class AmazonOptions
     {
         public string Region {get; set;} = default!;

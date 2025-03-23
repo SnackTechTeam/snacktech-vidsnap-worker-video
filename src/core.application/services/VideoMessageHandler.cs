@@ -46,7 +46,10 @@ namespace core.application.services
 
                 var mensagemSucesso = await UploadArquivosProduzidos(videoParaBaixar, execucaoVideo.Data);
 
-                Directory.Delete(videoParaBaixar.DestinoLocal(),true);
+                var destinoLocal = videoParaBaixar.DestinoLocal();
+
+                if(Directory.Exists(destinoLocal))
+                    Directory.Delete(destinoLocal,true);
 
                 return new Result<VideoProcessingSuccessDto>(mensagemSucesso);            
         }

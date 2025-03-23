@@ -1,6 +1,9 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace core.domain.options
 {
+    [ExcludeFromCodeCoverage]
     public class SqsOptions
     {
         public string ServiceUrl {get; set;} = default!;

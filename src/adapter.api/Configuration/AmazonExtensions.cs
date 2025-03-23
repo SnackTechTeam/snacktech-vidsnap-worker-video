@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 
 namespace adapter.api.Configuration
 {
-    [ExcludeFromCodeCoverage]
     public static class AmazonExtensions
     {
         public static IServiceCollection AddAmazonSqs(this IServiceCollection services){

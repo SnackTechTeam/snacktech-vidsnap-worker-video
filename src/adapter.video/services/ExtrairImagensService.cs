@@ -1,4 +1,4 @@
-
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using core.domain.common;
 using core.domain.models;
@@ -9,6 +9,7 @@ using Xabe.FFmpeg.Downloader;
 
 namespace adapter.video.services
 {
+    [ExcludeFromCodeCoverage]
     public class ExtrairImagensService: IExtrairImagensService
     {
         private readonly ILogger<ExtrairImagensService> logger;

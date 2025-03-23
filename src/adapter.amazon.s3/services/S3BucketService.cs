@@ -60,6 +60,7 @@ namespace adapter.amazon.s3.services
                 return new Result();
             }
             catch(Exception ex){
+                logger.LogError(ex,$"Erro - SubirArquivoAsync - {ex.Message}");
                 return new Result(ex);
             }
         }
