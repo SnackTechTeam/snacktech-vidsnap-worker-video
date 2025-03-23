@@ -22,4 +22,13 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\adapter.api\adapter.api.csproj" />
+    <ProjectReference Include="..\..\src\adapter.amazon.s3\adapter.amazon.s3.csproj" />
+    <ProjectReference Include="..\..\src\adapter.amazon.sqs\adapter.amazon.sqs.csproj" />
+    <ProjectReference Include="..\..\src\core.application\core.application.csproj" />
+    <ProjectReference Include="..\..\src\core.domain\core.domain.csproj" />
+    <ProjectReference Include="..\..\src\adapter.video\adapter.video.csproj" />
+  </ItemGroup>
+
 </Project>

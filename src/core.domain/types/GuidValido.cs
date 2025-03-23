@@ -2,7 +2,7 @@ namespace core.domain.types
 {
     public struct GuidValido: IEquatable<GuidValido>
     {
-        internal Guid Valor { readonly get; private set; }
+        public Guid Valor { readonly get; private set; }
         
         public GuidValido(string guid){
             Valor = ValidarValor(guid);
