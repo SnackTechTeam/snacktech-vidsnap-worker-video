@@ -4,6 +4,7 @@ using Amazon.S3.Model;
 using core.domain.models;
 using Microsoft.Extensions.Logging;
 using Moq;
+using unit.tests.helpers;
 
 namespace unit.tests.adapter.amazon.s3
 {
@@ -24,14 +25,7 @@ namespace unit.tests.adapter.amazon.s3
         public async Task BaixarArquivoAsync_ShouldDownloadFileSuccessfully()
         {
             // Arrange
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Bucket = "test-bucket",
-                Chave = "test-key/video.mp4",
-                Cliente = Guid.NewGuid(),
-                CaminhoChave = "test-key",
-                NomeVideo = "video.mp4"
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilder();
 
             var mockResponse = new GetObjectResponse
             {
@@ -64,14 +58,7 @@ namespace unit.tests.adapter.amazon.s3
         public async Task BaixarArquivoAsync_ShouldHandleException()
         {
             // Arrange
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Bucket = "test-bucket",
-                Chave = "test-key/video.mp4",
-                Cliente = Guid.NewGuid(),
-                CaminhoChave = "test-key",
-                NomeVideo = "video.mp4"
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilder();
 
             mockS3Client
                 .Setup(client => client.GetObjectAsync(It.IsAny<GetObjectRequest>(), default))

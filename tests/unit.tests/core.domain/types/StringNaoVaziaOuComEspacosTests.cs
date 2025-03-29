@@ -34,7 +34,7 @@ namespace unit.tests.core.domain.types
         {
             string? invalidString = null;
 
-            Assert.Throws<ArgumentException>(() => new StringNaoVaziaOuComEspacos(invalidString));
+            Assert.Throws<ArgumentException>(() => new StringNaoVaziaOuComEspacos(invalidString!));
         }
 
         [Fact]

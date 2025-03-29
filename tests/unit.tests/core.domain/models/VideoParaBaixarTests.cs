@@ -1,5 +1,6 @@
 using core.domain.models;
 using core.domain.types;
+using unit.tests.helpers;
 
 namespace unit.tests.core.domain.models
 {
@@ -9,12 +10,9 @@ namespace unit.tests.core.domain.models
         public void DestinoLocalRetornaCaminhoCorreto()
         {
             var cliente = new GuidValido(Guid.NewGuid());
+            var videoId = new GuidValido(Guid.NewGuid());
             var video = new VideoValido("example.mp4");
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = video
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente,videoId,video);
 
             var expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "videos", cliente.ToString());
 
@@ -27,12 +25,9 @@ namespace unit.tests.core.domain.models
         public void CaminhoVideoCompletoRetornaCaminhoCorreto()
         {
             var cliente = new GuidValido(Guid.NewGuid());
+            var videoId = new GuidValido(Guid.NewGuid());
             var video = new VideoValido("example.mp4");
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = video
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente,videoId,video);
 
             var expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "videos", cliente.ToString(), video.ToString());
 
@@ -45,12 +40,9 @@ namespace unit.tests.core.domain.models
         public void DestinoImagensRetornaCaminhoCorreto()
         {
             var cliente = new GuidValido(Guid.NewGuid());
+            var videoId = new GuidValido(Guid.NewGuid());
             var video = new VideoValido("example.mp4");
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = video
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente,videoId,video);
 
             var expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "videos", cliente.ToString(), "imagens");
 
@@ -63,12 +55,9 @@ namespace unit.tests.core.domain.models
         public void DestinoZipRetornaCaminhoCorreto()
         {
             var cliente = new GuidValido(Guid.NewGuid());
+            var videoId = new GuidValido(Guid.NewGuid());
             var video = new VideoValido("example.mp4");
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = video
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente,videoId,video);
 
             var expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "videos", cliente.ToString(), "zip");
 
@@ -81,14 +70,11 @@ namespace unit.tests.core.domain.models
         public void NomeZipRetornaNomeCorreto()
         {
             var cliente = new GuidValido(Guid.NewGuid());
+            var videoId = new GuidValido(Guid.NewGuid());
             var video = new VideoValido("example.mp4");
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = video
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente,videoId,video);
 
-            var expectedName = $"{cliente}-{video}.zip";
+            var expectedName = $"example-images.zip";
 
             var result = videoParaBaixar.NomeZip();
 
@@ -99,14 +85,11 @@ namespace unit.tests.core.domain.models
         public void CaminhoZipCompletoRetornaCaminhoCorreto()
         {
             var cliente = new GuidValido(Guid.NewGuid());
+            var videoId = new GuidValido(Guid.NewGuid());
             var video = new VideoValido("example.mp4");
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = video
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente,videoId,video);
 
-            var expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "videos", cliente.ToString(), "zip", $"{cliente}-{video}.zip");
+            var expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "videos", cliente.ToString(), "zip", $"example-images.zip");
 
             var result = videoParaBaixar.CaminhoZipCompleto();
 

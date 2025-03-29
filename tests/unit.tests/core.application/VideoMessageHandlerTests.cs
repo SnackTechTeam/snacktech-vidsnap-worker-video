@@ -6,13 +6,13 @@ using core.domain.ports.adapter.amazon.s3;
 using core.domain.ports.adapter.video;
 using Microsoft.Extensions.Logging;
 using Moq;
+using unit.tests.helpers;
 using DomainDtos = core.domain.dtos;
 
 namespace unit.tests.core.application.services
 {
     public class VideoMessageHandlerTest
     {
-        private readonly Mock<ILogger<VideoMessageHandler>> loggerMock;
         private readonly Mock<IS3BucketService> s3BucketServiceMock;
         private readonly Mock<IExtrairImagensService> extrairImagensServiceMock;
         private readonly Mock<ICompactService> compactServiceMock;
@@ -20,13 +20,11 @@ namespace unit.tests.core.application.services
 
         public VideoMessageHandlerTest()
         {
-            loggerMock = new Mock<ILogger<VideoMessageHandler>>();
             s3BucketServiceMock = new Mock<IS3BucketService>();
             extrairImagensServiceMock = new Mock<IExtrairImagensService>();
             compactServiceMock = new Mock<ICompactService>();
 
             handler = new VideoMessageHandler(
-                loggerMock.Object,
                 s3BucketServiceMock.Object,
                 extrairImagensServiceMock.Object,
                 compactServiceMock.Object
@@ -37,6 +35,7 @@ namespace unit.tests.core.application.services
         public async Task ProcessVideoMessageComSucesso()
         {
             var cliente = Guid.NewGuid();
+            var idVideo = Guid.NewGuid();
             var newVideoDto = new NewVideoDto
             {
                 
@@ -53,14 +52,7 @@ namespace unit.tests.core.application.services
                 }
             };
             
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = "video.mp4",
-                Bucket = "test-bucket",
-                Chave = $"{cliente}/video.mp4",
-                CaminhoChave = $"{cliente}"
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente.ToString(),idVideo.ToString(),"video.mp4");
 
             s3BucketServiceMock
                 .Setup(s => s.BaixarArquivoAsync(It.IsAny<VideoParaBaixar>()))
@@ -78,37 +70,23 @@ namespace unit.tests.core.application.services
                 .Setup(s => s.SubirArquivoAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new Result());
 
-            var result = await handler.ProcessVideoMessage(newVideoDto);
+            var result = await handler.ProcessVideoMessage(videoParaBaixar);
 
             Assert.True(result.IsSuccess());
             Assert.NotNull(result.Data);
-            Assert.Equal($"{cliente}/video.mp4", result.Data.ObjectKey);
+            Assert.Equal($"{idVideo}", result.Data.IdVideo);
         }
 
         [Fact]
         public async Task ProcessVideoMessageRetornaFalhaQuandoExecutarProcessoVideoFalha()
         {
-            var newVideoDto = new NewVideoDto
-            {
-                
-                Records = new List<DomainDtos.messages.Record>
-                {
-                    new DomainDtos.messages.Record
-                    {
-                        S3 = new S3
-                        {
-                            Bucket = new Bucket { Name = "test-bucket" },
-                            Object = new DomainDtos.messages.Object { Key = $"{Guid.NewGuid()}/video.mp4" }
-                        }
-                    }
-                }
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),"video.mp4");
 
             s3BucketServiceMock
                 .Setup(s => s.BaixarArquivoAsync(It.IsAny<VideoParaBaixar>()))
                 .ReturnsAsync(new Result<string>(new Exception("Download failed")));
 
-            var result = await handler.ProcessVideoMessage(newVideoDto);
+            var result = await handler.ProcessVideoMessage(videoParaBaixar);
 
             Assert.False(result.IsSuccess());
             Assert.Equal("Download failed", result.Exception.Message);
@@ -117,14 +95,7 @@ namespace unit.tests.core.application.services
         [Fact]
         public async Task ExecutarProcessoVideoComSucesso()
         {
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = Guid.NewGuid(),
-                NomeVideo = "video.mp4",
-                Bucket = "test-bucket",
-                Chave = "client/video.mp4",
-                CaminhoChave = "client"
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),"video.mp4");
 
             s3BucketServiceMock
                 .Setup(s => s.BaixarArquivoAsync(It.IsAny<VideoParaBaixar>()))
@@ -147,14 +118,7 @@ namespace unit.tests.core.application.services
         [Fact]
         public async Task ExecutarProcessoVideoRetornaFalhaQuandoExtracaoDeImagemFalha()
         {
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = Guid.NewGuid(),
-                NomeVideo = "video.mp4",
-                Bucket = "test-bucket",
-                Chave = "client/video.mp4",
-                CaminhoChave = "client"
-            };
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),"video.mp4");
 
             s3BucketServiceMock
                 .Setup(s => s.BaixarArquivoAsync(It.IsAny<VideoParaBaixar>()))
@@ -174,14 +138,8 @@ namespace unit.tests.core.application.services
         public async Task UploadArquivosProduzidosFuncionaCorretamente()
         {
             var cliente = Guid.NewGuid();
-            var videoParaBaixar = new VideoParaBaixar
-            {
-                Cliente = cliente,
-                NomeVideo = "video.mp4",
-                Bucket = "test-bucket",
-                Chave = $"{cliente}/video.mp4",
-                CaminhoChave = $"{cliente}"
-            };
+            var idVideo = Guid.NewGuid();
+            var videoParaBaixar = ObjectsBuilder.VideoParaBaixarBuilderWithValues(cliente.ToString(),idVideo.ToString(),"video.mp4");
 
             var nomeFrame = "frame1.jpg";
 
@@ -192,9 +150,9 @@ namespace unit.tests.core.application.services
             var result = await handler.UploadArquivosProduzidos(videoParaBaixar, nomeFrame);
 
             Assert.NotNull(result);
-            Assert.Equal($"{cliente}/video.mp4", result.ObjectKey);
-            Assert.Equal($"{cliente}/frame1.jpg", result.ImagePath);
-            Assert.Equal($"{cliente}/{cliente}-video.mp4.zip", result.ZipPath);
+            Assert.Equal($"{idVideo}", result.IdVideo);
+            Assert.Equal($"s3://bucket-name/{cliente}/{idVideo}/image.jpg", result.UrlImagem);
+            Assert.Equal($"s3://bucket-name/{cliente}/{idVideo}/video-images.zip", result.UrlZip);
         }
     }
 }

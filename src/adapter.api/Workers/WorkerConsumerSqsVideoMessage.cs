@@ -1,5 +1,7 @@
 using core.domain.dtos;
 using core.domain.dtos.messages;
+using core.domain.enums;
+using core.domain.models;
 using core.domain.options;
 using core.domain.ports.adapter.amazon.sqs;
 using core.domain.ports.core.application;
@@ -41,16 +43,7 @@ namespace adapter.api.Workers
                                 logger.LogInformation($"Mensagem {message.MessageId} fora do padrão esperado ou sem registros");
                                 continue;
                             }
-
-                            var result = await videoMessageHandler.ProcessVideoMessage(mensagemDeserializada!);
-
-                            if(!result.IsSuccess())
-                            {
-                                await sqsMessagingService.EnviarMensagemAsync(message.Body, sqsOptions.QueueUrlDlq);
-                                continue;        
-                            }
-
-                            await sqsMessagingService.EnviarMensagemAsync(result.Data,sqsOptions.QueueUrlProcessSuccess);
+                            await ProcessarVideo(mensagemDeserializada);
                             
                        }
                        catch(Exception ex){
@@ -61,6 +54,7 @@ namespace adapter.api.Workers
                             };
 
                             await sqsMessagingService.EnviarMensagemAsync(JsonConvert.SerializeObject(dlqMessage),sqsOptions.QueueUrlDlq);
+                            
                        }
                        finally{
                             await sqsMessagingService.DeletarMensagemAsync(sqsOptions.QueueUrlConsuming,message);
@@ -71,6 +65,36 @@ namespace adapter.api.Workers
                 logger.LogInformation("Aguardando para consumir novas mensagens...");
                 await Task.Delay(5000);
             }
+        }
+
+        private async Task ProcessarVideo(NewVideoDto mensagemDeserializada){
+            VideoParaBaixar videoParaBaixar = new VideoParaBaixar(mensagemDeserializada);
+            try{
+                await EnviarMensagemInicioProcesso(videoParaBaixar);
+                var result = await videoMessageHandler.ProcessVideoMessage(videoParaBaixar);
+
+                if(!result.IsSuccess())
+                {
+                    await EnviarMensagemFalha(videoParaBaixar);
+                    return;
+                }
+
+                await sqsMessagingService.EnviarMensagemAsync(result.Data,sqsOptions.QueueUrlProcess);
+            }
+            catch(Exception ex){
+                logger.LogError(ex, $"Erro durante processamento de video {videoParaBaixar.CaminhoChave} - {ex.Message}");
+                await EnviarMensagemFalha(videoParaBaixar);
+            }
+        }
+
+        private async Task EnviarMensagemFalha(VideoParaBaixar videoParaBaixar){
+            var failResultMessage = VideoProcessingStatusDto.CriarParaFalha(videoParaBaixar.CaminhoChave);
+            await sqsMessagingService.EnviarMensagemAsync(failResultMessage,sqsOptions.QueueUrlProcess);
+        }
+
+        private async Task EnviarMensagemInicioProcesso(VideoParaBaixar videoParaBaixar){
+            var failResultMessage = VideoProcessingStatusDto.CriarParaInicioProcesso(videoParaBaixar.CaminhoChave);
+            await sqsMessagingService.EnviarMensagemAsync(failResultMessage,sqsOptions.QueueUrlProcess);
         }
     }
 }

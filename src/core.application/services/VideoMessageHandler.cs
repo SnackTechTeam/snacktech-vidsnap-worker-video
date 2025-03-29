@@ -1,5 +1,6 @@
 using core.domain.common;
 using core.domain.dtos.messages;
+using core.domain.enums;
 using core.domain.models;
 using core.domain.ports.adapter.amazon.s3;
 using core.domain.ports.adapter.video;
@@ -10,48 +11,35 @@ namespace core.application.services
 {
     public class VideoMessageHandler : IVideoMessageHandler
     {
-        private readonly ILogger<VideoMessageHandler> logger;
         private readonly IS3BucketService s3BucketService;
         private readonly IExtrairImagensService extrairImagensService;
         private readonly ICompactService compactService;
 
-        public VideoMessageHandler(ILogger<VideoMessageHandler> logger, 
-                                    IS3BucketService s3BucketService,
+        public VideoMessageHandler(IS3BucketService s3BucketService,
                                     IExtrairImagensService extrairImagensService,
                                     ICompactService compactService)
         {
-            this.logger = logger;
             this.s3BucketService = s3BucketService;
             this.extrairImagensService = extrairImagensService;
             this.compactService = compactService;
         }
 
-        public async Task<Result<VideoProcessingSuccessDto>> ProcessVideoMessage(NewVideoDto newVideoDto)
+        public async Task<Result<VideoProcessingStatusDto>> ProcessVideoMessage(VideoParaBaixar videoParaBaixar)
         {
-            var record = newVideoDto.Records.First();
-            
-            var objectKeyArray = record.S3.Object.Key.Split("/");
-                VideoParaBaixar videoParaBaixar = new VideoParaBaixar{
-                    Cliente = objectKeyArray.First(),
-                    NomeVideo = objectKeyArray.Last(),
-                    Bucket = record.S3.Bucket.Name,
-                    Chave = record.S3.Object.Key,
-                    CaminhoChave = Path.Combine(objectKeyArray.Take(objectKeyArray.Length - 1).ToArray())
-                };
+            var execucaoVideo = await ExecutarProcessoVideo(videoParaBaixar);
 
-                var execucaoVideo = await ExecutarProcessoVideo(videoParaBaixar);
+            if(!execucaoVideo.IsSuccess()){
+                return new Result<VideoProcessingStatusDto>(execucaoVideo.Exception);
+            }
+                    
+            var mensagemSucesso = await UploadArquivosProduzidos(videoParaBaixar, execucaoVideo.Data);
 
-                if(!execucaoVideo.IsSuccess())
-                    return new Result<VideoProcessingSuccessDto>(execucaoVideo.Exception);
+            var destinoLocal = videoParaBaixar.DestinoLocal();
 
-                var mensagemSucesso = await UploadArquivosProduzidos(videoParaBaixar, execucaoVideo.Data);
+            if(Directory.Exists(destinoLocal))
+                Directory.Delete(destinoLocal,true);
 
-                var destinoLocal = videoParaBaixar.DestinoLocal();
-
-                if(Directory.Exists(destinoLocal))
-                    Directory.Delete(destinoLocal,true);
-
-                return new Result<VideoProcessingSuccessDto>(mensagemSucesso);            
+            return new Result<VideoProcessingStatusDto>(mensagemSucesso);            
         }
 
         public async Task<Result<string>> ExecutarProcessoVideo(VideoParaBaixar videoParaBaixar){
@@ -74,18 +62,20 @@ namespace core.application.services
             return new Result<string>(resultImageExtraction.Data);    
         }
 
-        public async Task<VideoProcessingSuccessDto> UploadArquivosProduzidos(VideoParaBaixar videoParaBaixar, string nomeFrame){
-            var caminhoS3Zip = Path.Combine(videoParaBaixar.CaminhoChave,videoParaBaixar.NomeZip());
+        public async Task<VideoProcessingStatusDto> UploadArquivosProduzidos(VideoParaBaixar videoParaBaixar, string nomeFrame){
+            var caminhoS3Zip = string.Join("/",videoParaBaixar.CaminhoChave,videoParaBaixar.NomeZip());
             await s3BucketService.SubirArquivoAsync(videoParaBaixar.Bucket,caminhoS3Zip,videoParaBaixar.CaminhoZipCompleto());
 
-            var caminhoS3Imagem = Path.Combine(videoParaBaixar.CaminhoChave,nomeFrame);
+            var frameExtensao = Path.GetExtension(nomeFrame);
+            var caminhoS3Imagem = string.Join("/",videoParaBaixar.CaminhoChave,$"image{frameExtensao}");
             var caminhoLocalFrame = Path.Combine(videoParaBaixar.DestinoImagens(),nomeFrame);
             await s3BucketService.SubirArquivoAsync(videoParaBaixar.Bucket,caminhoS3Imagem,caminhoLocalFrame);
 
-            var successMessage = new VideoProcessingSuccessDto{
-                    ObjectKey = videoParaBaixar.Chave,
-                    ImagePath = caminhoS3Imagem,
-                    ZipPath = caminhoS3Zip
+            var successMessage = new VideoProcessingStatusDto{
+                    IdVideo = videoParaBaixar.IdVideo,
+                    UrlImagem = string.Join("/",$"s3://{videoParaBaixar.Bucket}",caminhoS3Imagem),
+                    UrlZip = string.Join("/",$"s3://{videoParaBaixar.Bucket}",caminhoS3Zip),
+                    Status = VideoStatusEnum.FinalizadoComSucesso.ToString()
                 };
             return successMessage;
         }

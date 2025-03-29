@@ -2,6 +2,7 @@ using adapter.api.Workers;
 using Amazon.SQS.Model;
 using core.domain.common;
 using core.domain.dtos.messages;
+using core.domain.models;
 using core.domain.options;
 using core.domain.ports.adapter.amazon.sqs;
 using core.domain.ports.core.application;
@@ -32,7 +33,7 @@ namespace unit.tests.adapter.api.workers
             {
                 QueueUrlConsuming = "test-queue-url",
                 QueueUrlDlq = "test-dlq-url",
-                QueueUrlProcessSuccess = "test-success-url"
+                QueueUrlProcess = "test-success-url"
             };
 
             mockOptions.Setup(o => o.Value).Returns(sqsOptions);
@@ -51,11 +52,11 @@ namespace unit.tests.adapter.api.workers
                     }
                 }
             };
-            var retornoSucesso = new VideoProcessingSuccessDto{
+            var retornoSucesso = new VideoProcessingStatusDto{
 
             };
             mockSqsMessagingService.Setup(s => s.ConsumirMensagemDeFilaAsync(It.IsAny<string>())).ReturnsAsync(new Result<ReceiveMessageResponse>(resposta));
-            mockVideoMessageHandler.Setup(h => h.ProcessVideoMessage(It.IsAny<NewVideoDto>())).ReturnsAsync(new Result<VideoProcessingSuccessDto>(retornoSucesso));
+            mockVideoMessageHandler.Setup(h => h.ProcessVideoMessage(It.IsAny<VideoParaBaixar>())).ReturnsAsync(new Result<VideoProcessingStatusDto>(retornoSucesso));
 
             var worker = new WorkerConsumerSqsVideoMessage(mockLogger.Object, mockOptions.Object, mockSqsMessagingService.Object, mockVideoMessageHandler.Object);
 
@@ -63,8 +64,8 @@ namespace unit.tests.adapter.api.workers
             cancellationTokenSource.CancelAfter(1000);
             await worker.StartAsync(cancellationTokenSource.Token);
 
-            mockVideoMessageHandler.Verify(h => h.ProcessVideoMessage(It.IsAny<NewVideoDto>()), Times.Once);
-            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
+            mockVideoMessageHandler.Verify(h => h.ProcessVideoMessage(It.IsAny<VideoParaBaixar>()), Times.Once);
+            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Exactly(2));
             mockSqsMessagingService.Verify(s => s.DeletarMensagemAsync(It.IsAny<string>(), It.IsAny<Message>()), Times.Once);
         }
 
@@ -91,7 +92,7 @@ namespace unit.tests.adapter.api.workers
             cancellationTokenSource.CancelAfter(1000);
             await worker.StartAsync(cancellationTokenSource.Token);
 
-            mockVideoMessageHandler.Verify(h => h.ProcessVideoMessage(It.IsAny<NewVideoDto>()), Times.Never);
+            mockVideoMessageHandler.Verify(h => h.ProcessVideoMessage(It.IsAny<VideoParaBaixar>()), Times.Never);
             mockLogger.Verify(
                 x => x.Log(
                     LogLevel.Information,
@@ -107,7 +108,7 @@ namespace unit.tests.adapter.api.workers
         [Fact]
         public async Task ExecuteAsyncDeveEnviarMensagemParaDlqEmCasoDeFalha()
         {
-             var videoDto = ObjectsBuilder.NewVideoDtoBuilder();
+            var videoDto = ObjectsBuilder.NewVideoDtoBuilderWithValues("clienteInvalido","idVideoInvalido","video.mp4");
             var resposta = new ReceiveMessageResponse{
                 Messages = new List<Message>{
                     new Message{
@@ -119,7 +120,7 @@ namespace unit.tests.adapter.api.workers
             };
             
             mockSqsMessagingService.Setup(s => s.ConsumirMensagemDeFilaAsync(It.IsAny<string>())).ReturnsAsync(new Result<ReceiveMessageResponse>(resposta));
-            mockVideoMessageHandler.Setup(h => h.ProcessVideoMessage(It.IsAny<NewVideoDto>())).ReturnsAsync(new Result<VideoProcessingSuccessDto>("error",true));
+            mockVideoMessageHandler.Setup(h => h.ProcessVideoMessage(It.IsAny<VideoParaBaixar>())).ReturnsAsync(new Result<VideoProcessingStatusDto>("error",true));
 
             var worker = new WorkerConsumerSqsVideoMessage(mockLogger.Object, mockOptions.Object, mockSqsMessagingService.Object, mockVideoMessageHandler.Object);
 
@@ -131,7 +132,7 @@ namespace unit.tests.adapter.api.workers
         }
 
         [Fact]
-        public async Task ExecuteAsyncDeveManipularExceptionsEEnviarParaDlq()
+        public async Task ExecuteAsyncDeveManipularExceptionsEEnviarStatusDeErro()
         {
               var videoDto = ObjectsBuilder.NewVideoDtoBuilder();
             var resposta = new ReceiveMessageResponse{
@@ -145,7 +146,7 @@ namespace unit.tests.adapter.api.workers
             };
             
             mockSqsMessagingService.Setup(s => s.ConsumirMensagemDeFilaAsync(It.IsAny<string>())).ReturnsAsync(new Result<ReceiveMessageResponse>(resposta));
-            mockVideoMessageHandler.Setup(h => h.ProcessVideoMessage(It.IsAny<NewVideoDto>())).ThrowsAsync(new Exception("Processing error"));
+            mockVideoMessageHandler.Setup(h => h.ProcessVideoMessage(It.IsAny<VideoParaBaixar>())).ThrowsAsync(new Exception("Processing error"));
 
             var worker = new WorkerConsumerSqsVideoMessage(mockLogger.Object, mockOptions.Object, mockSqsMessagingService.Object, mockVideoMessageHandler.Object);
 
@@ -153,7 +154,7 @@ namespace unit.tests.adapter.api.workers
             cancellationTokenSource.CancelAfter(1000);
             await worker.StartAsync(cancellationTokenSource.Token);
 
-            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
+            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Exactly(2));
         }
     }
 }
