@@ -37,7 +37,7 @@ services:
       - SqsOptions__ServiceUrl=http://localstack:4566
       - SqsOptions__QueueUrlConsuming=http://localhost:4566/000000000000/evento-novo-video
       - SqsOptions__QueueUrlDlq=http://localhost:4566/000000000000/evento-novo-video-dlq
-      - SqsOptions__QueueUrlProcessSuccess=http://localhost:4566/000000000000/evento-video-processado
+      - SqsOptions__QueueUrlProcess=http://localhost:4566/000000000000/evento-video-processado
       - S3Options__ServiceUrl=http://localstack:4566
     ports:
       - 8080:8080

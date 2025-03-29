@@ -87,7 +87,9 @@ Módulo com serviços que trabalham as estruturas do núcleo e ou aciona os adap
 
 #### Tests
 
-TODO
+A aplicação conta com 1 projeto de teste unitário.
+
+O `unit-tests` contem todo o conjunto de testes unitários construídos para garantir que cada unidade de código esteja operando como esperado dentro de cada respectivo contexto
 
 ### Modificabilidade
 

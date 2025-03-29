@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using adapter.amazon.s3;
 using adapter.amazon.sqs;
 using adapter.api.Configuration;
+using adapter.api.Configuration.HealthChecks;
 using adapter.api.Workers;
 using adapter.video;
 using core.application;
@@ -24,6 +25,7 @@ builder.Services.AddAdapterAmazonSqsServices();
 builder.Services.AddAdapterVideoServices();
 builder.Services.AddApplicationServices();
 
+builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -41,10 +43,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCustomHealthChecks();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
+
+[ExcludeFromCodeCoverage]
+public static partial class Program { }
