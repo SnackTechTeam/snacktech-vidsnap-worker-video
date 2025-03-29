@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vidsnap-worker-video-deployment
+spec:
+  selector:
+    matchLabels:
+      app: vidsnap-worker-video-pod
+  template:
+    metadata:
+      labels:
+        app: vidsnap-worker-video-pod
+    spec:
+      containers:
+        - name: vidsnap-worker-container
+          image: #preenchido pela pipeline
+          envFrom: #envFrom to load from ConfigMap and Secret
+            - secretRef:
+                name: vidsnap-worker-video-secret
+            - configMapRef:
+                name: vidsnap-worker-video-configmap
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
+            limits:
+              memory: "800Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/health/live
+              port: 8080
+            intialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3

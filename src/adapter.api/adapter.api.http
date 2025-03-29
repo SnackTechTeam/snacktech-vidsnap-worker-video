@@ -1,0 +1,6 @@
+@adapter.api_HostAddress = http://localhost:5242
+
+GET {{adapter.api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

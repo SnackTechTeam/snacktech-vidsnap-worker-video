@@ -3,6 +3,14 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+#Excluir launch do vscode
+.vscode
+
+# Recursos do FFmpeg
+/src/*/ffmpeg
+/src/*/ffprobe
+/src/*/version.json
+
 # User-specific files
 *.rsuser
 *.suo
