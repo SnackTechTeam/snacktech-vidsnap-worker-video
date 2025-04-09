@@ -67,7 +67,7 @@ spec:
             httpGet:
               path: /api/health/live
               port: 8080
-            intialDelaySeconds: 10
+            initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
