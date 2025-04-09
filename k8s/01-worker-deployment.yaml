@@ -56,11 +56,11 @@ spec:
 
           resources:
             requests:
-              memory: "100Mi"
-              cpu: "100m"
+              memory: "256Mi"
+              cpu: "300m"
             limits:
-              memory: "800Mi"
-              cpu: "500m"
+              memory: "1000Mi"
+              cpu: "1000m"
           ports:
             - containerPort: 8080
           livenessProbe:
