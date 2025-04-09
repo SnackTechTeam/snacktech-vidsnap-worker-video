@@ -23,7 +23,7 @@ namespace adapter.api.Configuration
                     return new AmazonSQSClient(settingsAmazon.AwsAccessKeyId, settingsAmazon.AwsSecretAccessKey, settingsAmazon.AwsSecretAccessToken, config);
                 }
 
-                var credentials = new BasicAWSCredentials(settingsAmazon.AwsAccessKeyId,settingsAmazon.AwsSecretAccessKey);
+                var credentials = new SessionAWSCredentials(settingsAmazon.AwsAccessKeyId,settingsAmazon.AwsSecretAccessKey, settingsAmazon.AwsSecretAccessToken);
                 return new AmazonSQSClient(credentials,RegionEndpoint.GetBySystemName(settingsAmazon.Region));
             });
             return services;
@@ -34,7 +34,7 @@ namespace adapter.api.Configuration
            services.AddSingleton<IAmazonS3>(sp => {
                 var settingsAmazon = sp.GetRequiredService<IOptions<AmazonOptions>>().Value;
                 var settingsS3 = sp.GetRequiredService<IOptions<S3Options>>().Value;
-                var credentials = new BasicAWSCredentials(settingsAmazon.AwsAccessKeyId,settingsAmazon.AwsSecretAccessKey);
+                var credentials = new SessionAWSCredentials(settingsAmazon.AwsAccessKeyId,settingsAmazon.AwsSecretAccessKey, settingsAmazon.AwsSecretAccessToken);
                 if(settingsAmazon.UseLocalStack){
                     var s3Config = new AmazonS3Config{
                         ServiceURL = settingsS3.ServiceUrl,
