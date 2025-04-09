@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-videos-process-deployment
+spec:
+  selector:
+    matchLabels:
+      app: orker-videos-process-pod
+  template:
+    metadata:
+      labels:
+        app: orker-videos-process-pod
+    spec:
+      containers:
+        - name: vidsnap-worker-container
+          image: #preenchido pela pipeline
+          env:
+            - name: AmazonOptions__AwsAccessKeyId
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credential-secret
+                  key: access-key
+            - name: AmazonOptions__AwsSecretAccessKey
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credential-secret
+                  key: secret-key
+            - name: AmazonOptions__AwsSecretAccessToken
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credential-secret
+                  key: session-token
+            - name: AmazonOptions__Region
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credential-secret
+                  key: region
+            - name: AmazonOptions__UseLocalStack
+              value: "false"
+
+            - name: SqsOptions__QueueUrlConsuming
+              valueFrom:
+                configMapKeyRef:
+                  name: sqs-queues-configmap
+                  key: videos-process-queue
+            - name: SqsOptions__QueueUrlDlq
+              valueFrom:
+                configMapKeyRef:
+                  name: sqs-queues-configmap
+                  key: videos-process-queue-dlq
+            - name: SqsOptions__QueueUrlProcess
+              valueFrom:
+                configMapKeyRef:
+                  name: sqs-queues-configmap
+                  key: videos-status-queue
+
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
+            limits:
+              memory: "800Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/health/live
+              port: 8080
+            intialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
