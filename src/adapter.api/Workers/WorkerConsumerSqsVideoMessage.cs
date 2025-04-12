@@ -53,7 +53,10 @@ namespace adapter.api.Workers
                                 ErroDeProcessamento = new ExceptionResponse(ex)
                             };
 
-                            await sqsMessagingService.EnviarMensagemAsync(JsonConvert.SerializeObject(dlqMessage),sqsOptions.QueueUrlDlq);
+                            await sqsMessagingService.EnviarMensagemAsync(
+                                JsonConvert.SerializeObject(dlqMessage),
+                                sqsOptions.QueueUrlDlq,
+                                messageGroupId: message.MessageId);
                             
                        }
                        finally{
@@ -79,7 +82,7 @@ namespace adapter.api.Workers
                     return;
                 }
 
-                await sqsMessagingService.EnviarMensagemAsync(result.Data,sqsOptions.QueueUrlProcess);
+                await sqsMessagingService.EnviarMensagemAsync(result.Data, sqsOptions.QueueUrlProcess, videoParaBaixar.IdVideo.ToString());
             }
             catch(Exception ex){
                 logger.LogError(ex, $"Erro durante processamento de video {videoParaBaixar.CaminhoChave} - {ex.Message}");
@@ -89,12 +92,12 @@ namespace adapter.api.Workers
 
         private async Task EnviarMensagemFalha(VideoParaBaixar videoParaBaixar){
             var failResultMessage = VideoProcessingStatusDto.CriarParaFalha(videoParaBaixar.CaminhoChave);
-            await sqsMessagingService.EnviarMensagemAsync(failResultMessage,sqsOptions.QueueUrlProcess);
+            await sqsMessagingService.EnviarMensagemAsync(failResultMessage, sqsOptions.QueueUrlProcess, videoParaBaixar.IdVideo.ToString());
         }
 
         private async Task EnviarMensagemInicioProcesso(VideoParaBaixar videoParaBaixar){
             var failResultMessage = VideoProcessingStatusDto.CriarParaInicioProcesso(videoParaBaixar.IdVideo);
-            await sqsMessagingService.EnviarMensagemAsync(failResultMessage,sqsOptions.QueueUrlProcess);
+            await sqsMessagingService.EnviarMensagemAsync(failResultMessage, sqsOptions.QueueUrlProcess, videoParaBaixar.IdVideo.ToString());
         }
     }
 }

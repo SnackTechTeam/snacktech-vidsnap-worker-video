@@ -17,6 +17,7 @@ namespace adapter.api.configuration.tests
             {
                 AwsAccessKeyId = "test-key",
                 AwsSecretAccessKey = "test-secret",
+                AwsSecretAccessToken = "test-token",
                 Region = "us-east-1",
                 UseLocalStack = false
             };
@@ -50,6 +51,7 @@ namespace adapter.api.configuration.tests
             {
                 AwsAccessKeyId = "test-key",
                 AwsSecretAccessKey = "test-secret",
+                AwsSecretAccessToken = "test-token",
                 Region = "us-east-1",
                 UseLocalStack = true
             };

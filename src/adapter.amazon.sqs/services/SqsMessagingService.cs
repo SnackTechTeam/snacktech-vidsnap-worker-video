@@ -17,7 +17,19 @@ namespace adapter.amazon.sqs.services
             this.sqsClient = sqsClient;
         }
 
-        public async Task<Result> EnviarMensagemAsync<T>(T mensagem, string urlFila){
+        public async Task<Result> EnviarMensagemAsync<T>(
+                T mensagem, 
+                string urlFila, 
+                string? messageGroupId = null,
+                string? messageDeduplicationId = null)
+        {
+            bool isFifoQueue = urlFila.EndsWith(".fifo", StringComparison.OrdinalIgnoreCase);
+            if (isFifoQueue && string.IsNullOrWhiteSpace(messageGroupId))
+            {
+                var errorMsg = "MessageGroupId is required for FIFO queues.";
+                logger.LogError(errorMsg + " Queue URL: {QueueUrl}", urlFila);
+                return new Result(new ArgumentException(errorMsg, nameof(messageGroupId)));
+            }
             try{
                 var mensagemSerializada = JsonConvert.SerializeObject(mensagem);
 
@@ -25,6 +37,16 @@ namespace adapter.amazon.sqs.services
                     QueueUrl = urlFila,
                     MessageBody = mensagemSerializada
                 };
+
+                if (isFifoQueue)
+                {
+                    request.MessageGroupId = messageGroupId;
+
+                    if (!string.IsNullOrWhiteSpace(messageDeduplicationId))
+                    {
+                        request.MessageDeduplicationId = messageDeduplicationId;
+                    }
+                }
 
                 await sqsClient.SendMessageAsync(request);
                 return new Result();

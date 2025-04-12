@@ -1,12 +1,12 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: vidsnap-worker-video-hpa
+  name: worker-videos-process-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: vidsnap-worker-video-deployment
+    name: worker-videos-process-deployment
   minReplicas: 2
   maxReplicas: 10
   metrics:
@@ -15,4 +15,4 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 80
