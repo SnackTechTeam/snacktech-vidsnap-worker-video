@@ -93,7 +93,7 @@ namespace adapter.api.Workers
         }
 
         private async Task EnviarMensagemInicioProcesso(VideoParaBaixar videoParaBaixar){
-            var failResultMessage = VideoProcessingStatusDto.CriarParaInicioProcesso(videoParaBaixar.CaminhoChave);
+            var failResultMessage = VideoProcessingStatusDto.CriarParaInicioProcesso(videoParaBaixar.IdVideo);
             await sqsMessagingService.EnviarMensagemAsync(failResultMessage,sqsOptions.QueueUrlProcess);
         }
     }
