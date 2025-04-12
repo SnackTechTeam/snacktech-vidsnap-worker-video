@@ -65,7 +65,7 @@ namespace unit.tests.adapter.api.workers
             await worker.StartAsync(cancellationTokenSource.Token);
 
             mockVideoMessageHandler.Verify(h => h.ProcessVideoMessage(It.IsAny<VideoParaBaixar>()), Times.Once);
-            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Exactly(2));
+            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>(),It.IsAny<string?>(),It.IsAny<string?>() ), Times.Exactly(2));
             mockSqsMessagingService.Verify(s => s.DeletarMensagemAsync(It.IsAny<string>(), It.IsAny<Message>()), Times.Once);
         }
 
@@ -128,7 +128,7 @@ namespace unit.tests.adapter.api.workers
             cancellationTokenSource.CancelAfter(1000);
             await worker.StartAsync(cancellationTokenSource.Token);
 
-            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
+            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()), Times.Once);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace unit.tests.adapter.api.workers
             cancellationTokenSource.CancelAfter(1000);
             await worker.StartAsync(cancellationTokenSource.Token);
 
-            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>()), Times.Exactly(2));
+            mockSqsMessagingService.Verify(s => s.EnviarMensagemAsync(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()), Times.Exactly(2));
         }
     }
 }
