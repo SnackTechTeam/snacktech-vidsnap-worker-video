@@ -16,6 +16,22 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Set Solution Path
+      id: set_solution_path
+      run: |
+        # Informar aqui o caminho para o arquivo da solution
+        SOLUTION_PATH="./snacktech-vidsnap-worker-video.sln"
+        echo "SOLUTION_PATH=$SOLUTION_PATH" >> $GITHUB_ENV
+  
+    - name: Restore dependencies
+      run: dotnet restore $SOLUTION_PATH
+
+    - name: Build
+      run: dotnet build $SOLUTION_PATH --configuration Release
+
+    - name: Test
+      run: dotnet test $SOLUTION_PATH --configuration Release --collect:"XPlat Code Coverage" --logger:"trx;LogFileName=../TestResults.trx"
+  
     - name: Install SonarScanner
       run: |
         dotnet tool install --global dotnet-sonarscanner
