@@ -135,6 +135,21 @@ jobs:
       - name: Configure Kubectl
         run: |
           aws eks --region ${{ vars.AWS_REGION }} update-kubeconfig --name ${{ vars.PROJECT_NAME }}
+
+            # --- NEW STEPS TO INSTALL HELM AND KEDA ---
+      - name: Set up Helm
+        uses: azure/setup-helm@v4 # Use v4
+        with:
+          version: v3.12.0 # Specify a Helm version or let it use latest stable
+
+      - name: Install/Upgrade KEDA using Helm
+        run: |
+          helm repo add kedacore https://kedacore.github.io/charts
+          helm repo update
+          Use upgrade --install to handle both initial install and subsequent upgrades
+          echo "Waiting for KEDA pods to be ready..."
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=keda-operator -n keda --timeout=120s
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=keda-metrics-apiserver -n keda --timeout=120s
       
       - name: Replace ECR image string value
         env:
