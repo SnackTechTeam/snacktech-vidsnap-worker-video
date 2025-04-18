@@ -25,6 +25,12 @@ RUN dotnet build adapter.api/adapter.api.csproj -c Release -o /app/build
 #Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
+# Cria um usuário com ID 1000
+RUN useradd --create-home --uid 1000 appuser
+
+# Define o usuário padrão
+USER appuser
+
 WORKDIR /src
 
 # Instala o FFmpeg
