@@ -146,7 +146,7 @@ jobs:
         run: |
           helm repo add kedacore https://kedacore.github.io/charts
           helm repo update
-          Use upgrade --install to handle both initial install and subsequent upgrades
+          helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --wait
           echo "Waiting for KEDA pods to be ready..."
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=keda-operator -n keda --timeout=120s
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=keda-metrics-apiserver -n keda --timeout=120s
