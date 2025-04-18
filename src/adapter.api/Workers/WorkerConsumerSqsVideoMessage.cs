@@ -91,7 +91,7 @@ namespace adapter.api.Workers
         }
 
         private async Task EnviarMensagemFalha(VideoParaBaixar videoParaBaixar){
-            var failResultMessage = VideoProcessingStatusDto.CriarParaFalha(videoParaBaixar.CaminhoChave);
+            var failResultMessage = VideoProcessingStatusDto.CriarParaFalha(videoParaBaixar.IdVideo);
             await sqsMessagingService.EnviarMensagemAsync(failResultMessage, sqsOptions.QueueUrlProcess, videoParaBaixar.IdVideo.ToString());
         }
 
