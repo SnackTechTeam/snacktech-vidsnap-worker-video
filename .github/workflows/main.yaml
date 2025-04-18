@@ -144,18 +144,30 @@ jobs:
 
       - name: Install/Upgrade KEDA using Helm
         run: |
+          # Enable verbose command execution logging
+          set -x 
+
           helm repo add kedacore https://kedacore.github.io/charts
           helm repo update
           # Use upgrade --install to handle both initial install and subsequent upgrades
           # Ensure KEDA CRDs are installed first by the Helm chart
           helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --wait
+          
           echo "Waiting for KEDA pods to be ready..."
           # Wait for the operator pod
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=operator -n keda --timeout=180s
           # Wait for the metrics server pod using the component label
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=metrics-apiserver -n keda --timeout=180s
-          echo "KEDA pods are ready."
+          # Wait for the admission webhooks pod
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=admission-webhooks -n keda --timeout=180s
           
+          echo "KEDA pods appear ready. Pausing briefly..."
+          sleep 15 # Add a short delay 
+
+          echo "KEDA installation and readiness check complete."
+          # Disable verbose logging if needed for subsequent commands in the same step
+          set +x 
+
       - name: Replace ECR image string value
         env:
           IMAGE_URI: ${{ steps.build-image.outputs.image }}
