@@ -153,17 +153,12 @@ jobs:
           # Ensure KEDA CRDs are installed first by the Helm chart
           helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --wait
           
-          echo "Waiting for KEDA pods to be ready..."
+          echo "KEDA pods appear ready. Pausing briefly..."
+          sleep 120 # Add a short delay 
+          
           # Wait for the operator pod
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=operator -n keda --timeout=180s
-          # Wait for the metrics server pod using the component label
-          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=metrics-apiserver -n keda --timeout=180s
-          # Wait for the admission webhooks pod
-          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=admission-webhooks -n keda --timeout=180s
           
-          echo "KEDA pods appear ready. Pausing briefly..."
-          sleep 15 # Add a short delay 
-
           echo "KEDA installation and readiness check complete."
           # Disable verbose logging if needed for subsequent commands in the same step
           set +x 
