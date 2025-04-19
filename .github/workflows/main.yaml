@@ -136,7 +136,7 @@ jobs:
         run: |
           aws eks --region ${{ vars.AWS_REGION }} update-kubeconfig --name ${{ vars.PROJECT_NAME }}
       
-      - name: Replace ECR image string value
+      - name: Replace ECR image string value in k8s/01-worker-deployment.yaml
         env:
           IMAGE_URI: ${{ steps.build-image.outputs.image }}
         run: |
