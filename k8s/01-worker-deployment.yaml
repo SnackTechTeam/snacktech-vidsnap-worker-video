@@ -11,6 +11,7 @@ spec:
       labels:
         app: orker-videos-process-pod
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: vidsnap-worker-container
           image: #preenchido pela pipeline
@@ -63,6 +64,9 @@ spec:
               cpu: "1000m"
           ports:
             - containerPort: 8080
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000  # ID do usuário não-root criado no Dockerfile
           livenessProbe:
             httpGet:
               path: /api/health/live

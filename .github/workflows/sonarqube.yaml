@@ -28,20 +28,32 @@ jobs:
 
     - name: Build
       run: dotnet build $SOLUTION_PATH --configuration Release
-
-    - name: Test
-      run: dotnet test $SOLUTION_PATH --configuration Release --collect:"XPlat Code Coverage" --logger:"trx;LogFileName=../TestResults.trx"
   
     - name: Install SonarScanner
       run: |
         dotnet tool install --global dotnet-sonarscanner
 
+    - name: Install Coverlet
+      run: |
+        dotnet tool install --global coverlet.console
+
     - name: Run SonarScanner
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        dotnet-sonarscanner begin /k:"SnackTechTeam_snacktech-vidsnap-worker-video" /o:"snacktechteam" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+        dotnet-sonarscanner begin /k:"SnackTechTeam_snacktech-vidsnap-worker-video" \
+          /o:"snacktechteam" \
+          /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+          /d:sonar.sources=src \
+          /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
 
         dotnet build ./snacktech-vidsnap-worker-video.sln
+
+        coverlet ./tests/unit.tests/bin/Debug/net8.0/unit.tests.dll \
+          --target "dotnet" \
+          --targetargs "test tests/unit.tests --no-build --nologo" \
+          --format opencover \
+          --output "TestResults/coverage.opencover.xml"
 
         dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"

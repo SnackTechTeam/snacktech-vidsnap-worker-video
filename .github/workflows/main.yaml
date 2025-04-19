@@ -136,11 +136,16 @@ jobs:
         run: |
           aws eks --region ${{ vars.AWS_REGION }} update-kubeconfig --name ${{ vars.PROJECT_NAME }}
       
-      - name: Replace ECR image string value
+      - name: Replace ECR image string value in k8s/01-worker-deployment.yaml
         env:
           IMAGE_URI: ${{ steps.build-image.outputs.image }}
         run: |
           yq e '.spec.template.spec.containers[0].image = "'"$IMAGE_URI"'"' -i k8s/01-worker-deployment.yaml || { echo "Error updating ecr_image_url_repo_tag value"; exit 1; }
+      
+      - name: Replace queueName and awsRegion in k8s/03-keda-scale.yaml
+        run: |
+          yq e '.spec.triggers[0].metadata.queueName = "'"${{ vars.VIDEOS_PROCESS_SQS_NAME }}"'"' -i k8s/03-keda-scale.yaml || { echo "Error updating queueName"; exit 1; }
+          yq e '.spec.triggers[0].metadata.awsRegion = "'"${{ vars.AWS_REGION }}"'"' -i k8s/03-keda-scale.yaml || { echo "Error updating awsRegion"; exit 1; } 
       
       - name: Deploy to EKS
         run: |
